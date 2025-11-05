@@ -25,6 +25,11 @@ const AdminDashboard = () => {
   const [productDescription, setProductDescription] = useState('');
   const [productPrice, setProductPrice] = useState('');
 
+  const [kitName, setKitName] = useState('');
+  const [kitDescription, setKitDescription] = useState('');
+  const [kitPrice, setKitPrice] = useState('');
+  const [kitLevel, setKitLevel] = useState('');
+
   const handleAddProduct = (e: React.FormEvent) => {
     e.preventDefault();
     toast({
@@ -34,6 +39,18 @@ const AdminDashboard = () => {
     setProductName('');
     setProductDescription('');
     setProductPrice('');
+  };
+
+  const handleAddKit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: 'Educational kit added!',
+      description: 'New educational kit has been added successfully.',
+    });
+    setKitName('');
+    setKitDescription('');
+    setKitPrice('');
+    setKitLevel('');
   };
 
   if (!user) return null;
@@ -163,17 +180,91 @@ const AdminDashboard = () => {
           </TabsContent>
 
           <TabsContent value="kits">
-            <Card>
-              <CardHeader>
-                <CardTitle>Educational Kits Management</CardTitle>
-                <CardDescription>Add, edit, or remove educational kits</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-8">
-                  Kit management interface - Similar to products
-                </p>
-              </CardContent>
-            </Card>
+            <div className="grid md:grid-cols-2 gap-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Add New Educational Kit</CardTitle>
+                  <CardDescription>Create a new educational kit listing</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form onSubmit={handleAddKit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="kit-name">Kit Name</Label>
+                      <Input
+                        id="kit-name"
+                        placeholder="Arduino Starter Kit"
+                        value={kitName}
+                        onChange={(e) => setKitName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="kit-description">Description</Label>
+                      <Textarea
+                        id="kit-description"
+                        placeholder="Kit description..."
+                        rows={3}
+                        value={kitDescription}
+                        onChange={(e) => setKitDescription(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="kit-level">Difficulty Level</Label>
+                      <Input
+                        id="kit-level"
+                        placeholder="Beginner/Intermediate/Advanced"
+                        value={kitLevel}
+                        onChange={(e) => setKitLevel(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="kit-price">Price</Label>
+                      <Input
+                        id="kit-price"
+                        type="text"
+                        placeholder="$49.99"
+                        value={kitPrice}
+                        onChange={(e) => setKitPrice(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <Button type="submit" className="w-full">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Educational Kit
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Recent Kits</CardTitle>
+                  <CardDescription>Manage existing educational kits</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="flex justify-between items-center p-3 border border-border rounded-lg">
+                        <div>
+                          <p className="font-medium">Educational Kit {i}</p>
+                          <p className="text-sm text-muted-foreground">$49.99 • Beginner</p>
+                        </div>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="ghost">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="resources">
