@@ -1,165 +1,172 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { Mail, Phone, MapPin, MessageCircle, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";  // ← ADD THESE IMPORTS
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import logo from "@/assets/circuitaura-logo.png";
 
 const Contact = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [subjectType, setSubjectType] = useState("inquiry");
+  const [message, setMessage] = useState("");
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: 'Message sent!',
-      description: 'We\'ll get back to you as soon as possible.',
-    });
-    setName('');
-    setEmail('');
-    setMessage('');
+  const CONTACT_EMAIL = "circuitauraelectronics@gmail.com";
+  const PHONE_NUMBER = "919322291932";
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  const subjects: Record<string, string> = {
+    inquiry: "CircuitAura Product Inquiry",
+    feedback: "CircuitAura Feedback",
+    support: "CircuitAura Support Request",
+    order: "CircuitAura Order Question",
+    suggestion: "CircuitAura Suggestion",
+    partnership: "CircuitAura Partnership",
   };
 
-  const handleWhatsApp = () => {
-    const whatsappUrl = `https://wa.me/15551234567?text=Hi, I'd like to get in touch`;
-    window.open(whatsappUrl, '_blank');
-  };
+  const finalSubject = subjects[subjectType];
+
+  const body = `Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}\n\n---\nCircuitAura Website`;
+
+  window.open(
+    `https://mail.google.com/mail/?view=cm&fs=1&to=${CONTACT_EMAIL}&su=${encodeURIComponent(
+      finalSubject
+    )}&body=${encodeURIComponent(body)}`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+
+  await navigator.clipboard.writeText(
+    `To: ${CONTACT_EMAIL}\nSubject: ${finalSubject}\n\n${body}`
+  );
+
+  toast({
+    title: "✅ Opened!",
+    description: `Subject: "${finalSubject}"`,
+  });
+
+  setName("");
+  setEmail("");
+  setSubjectType("inquiry");
+  setMessage("");
+};
 
   return (
     <div className="min-h-screen py-12">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-16">
+          <img src={logo} alt="CircuitAura" className="h-24 w-24 mx-auto mb-6 animate-glow" />
           <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
-          <p className="text-xl text-muted-foreground">
-            We'd love to hear from you
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Feel free to ask any query or to give any feedback!
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {/* Contact Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Send us a message</CardTitle>
-              <CardDescription>
-                Fill out the form below and we'll get back to you within 24 hours
-              </CardDescription>
+              <CardTitle>Send Message</CardTitle>
+              <CardDescription>Fill the below details</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* SUBJECT DROPDOWN */}
                 <div>
-                  <Label htmlFor="name">Name</Label>
-                  <Input
-                    id="name"
-                    placeholder="Your name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="subject">Subject</Label>
+                  <Select value={subjectType} onValueChange={setSubjectType}>
+                    <SelectTrigger id="subject">
+                      <SelectValue placeholder="Choose subject" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="inquiry">Product Inquiry</SelectItem>
+                      <SelectItem value="feedback">Feedback</SelectItem>
+                      <SelectItem value="support">Technical Support</SelectItem>
+                      <SelectItem value="order">Order/Shipping</SelectItem>
+                      <SelectItem value="suggestion">Feature Suggestion</SelectItem>
+                      <SelectItem value="partnership">Partnership/College</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+
                 <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="your@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input id="name" placeholder="Enter your name" value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
+
                 <div>
-                  <Label htmlFor="message">Message</Label>
-                  <Textarea
-                    id="message"
-                    placeholder="How can we help you?"
-                    rows={5}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="email">Email *</Label>
+                  <Input id="email" type="email" placeholder="your@email.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
                 </div>
+
+                <div>
+                  <Label htmlFor="message">Message *</Label>
+                  <Textarea id="message" placeholder="Tell us how we can help you..." rows={5} value={message} onChange={(e) => setMessage(e.target.value)} required />
+                </div>
+
                 <Button type="submit" className="w-full">Send Message</Button>
               </form>
             </CardContent>
           </Card>
 
-          {/* Contact Information */}
           <div className="space-y-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <Mail className="h-5 w-5 text-primary mt-1" />
+              <CardHeader><CardTitle>Direct Contact</CardTitle></CardHeader>
+              <CardContent className="space-y-6">
+                <a href="mailto:circuitauraelectronics@gmail.com" className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors block">
+                  <Mail className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <p className="font-medium">Email</p>
-                    <a href="mailto:info@circuitaura.com" className="text-muted-foreground hover:text-primary">
-                      info@circuitaura.com
-                    </a>
+                    <p className="font-semibold">Email</p>
+                    <div className="text-muted-foreground hover:text-foreground underline">circuitauraelectronics@gmail.com</div>
+                  </div>
+                </a>
+
+                <div className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => window.open(`tel:${PHONE_NUMBER}`, '_blank')}>
+                  <Phone className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold">Phone/WhatsApp</p>
+                    <div className="text-muted-foreground hover:text-foreground font-mono">+91 93222 91932</div>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3">
-                  <Phone className="h-5 w-5 text-primary mt-1" />
+
+                <div className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                  <MapPin className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
                   <div>
-                    <p className="font-medium">Phone</p>
-                    <a href="tel:+15551234567" className="text-muted-foreground hover:text-primary">
-                      +1 (555) 123-4567
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <MapPin className="h-5 w-5 text-primary mt-1" />
-                  <div>
-                    <p className="font-medium">Address</p>
-                    <p className="text-muted-foreground">
-                      Innovation Hub<br />
-                      Tech City, TC 12345<br />
-                      United States
-                    </p>
+                    <p className="font-semibold">Location</p>
+                    <p className="text-muted-foreground">Pune, Maharashtra, India</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-br from-secondary/10 to-primary/10">
-              <CardHeader>
-                <CardTitle>WhatsApp Support</CardTitle>
-                <CardDescription>Get instant help via WhatsApp</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button onClick={handleWhatsApp} className="w-full" variant="secondary">
-                  <MessageCircle className="h-5 w-5 mr-2" />
-                  Chat on WhatsApp
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Follow Us</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex space-x-4">
-                  <a href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors">
-                    <Facebook className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors">
-                    <Twitter className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors">
-                    <Instagram className="h-5 w-5" />
-                  </a>
-                  <a href="#" className="p-2 rounded-lg bg-muted hover:bg-primary hover:text-primary-foreground transition-colors">
-                    <Linkedin className="h-5 w-5" />
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
+            <a href="https://wa.me/919322291932" target="_blank" className="block">
+              <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border-green-200/50 hover:shadow-lg transition-all cursor-pointer">
+                <CardContent className="p-8 text-center">
+                  <MessageCircle className="h-16 w-16 mx-auto mb-4 text-green-600" />
+                  <h3 className="text-2xl font-bold text-green-700 mb-2">Quick Chat</h3>
+                  <p className="text-muted-foreground mb-6">Instant WhatsApp support</p>
+                  <Button className="w-full bg-green-500 hover:bg-green-600 text-white text-lg">Start Chat</Button>
+                </CardContent>
+              </Card>
+            </a>
           </div>
         </div>
       </div>

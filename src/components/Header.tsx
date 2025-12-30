@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom';
-import { Moon, Sun, User, LogOut, Menu, X } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from './ui/button';
-import logo from '@/assets/circuitaura-logo.png';
-import { useState } from 'react';
+import { Link } from "react-router-dom";
+import { Moon, Sun, User, LogOut, Menu, X } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "./ui/button";
+import logo from "@/assets/circuitaura-logo.png";
+import { useState } from "react";
 
 export const Header = () => {
   const { theme, toggleTheme } = useTheme();
@@ -12,12 +12,14 @@ export const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/products', label: 'Products' },
-    { to: '/kits', label: 'Educational Kits' },
-    { to: '/learning', label: 'Learning Resources' },
-    { to: '/about', label: 'About' },
-    { to: '/contact', label: 'Contact' },
+    { to: "/", label: "Home" },
+    { to: "/products", label: "Products" },
+    { to: "/kits", label: "Educational Kits" },
+    { to: "/learning", label: "Learning Resources" },
+    { to: "/about", label: "About" },
+    { to: "/contact", label: "Contact" },
+    { to: "/orders", label: "Orders" },        // NEW
+
   ];
 
   return (
@@ -46,12 +48,17 @@ export const Header = () => {
         {/* Right Side Actions */}
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" onClick={toggleTheme}>
-            {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+            {theme === "light" ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
           </Button>
 
           {isAuthenticated ? (
             <div className="hidden md:flex items-center space-x-2">
-              <Link to={user?.role === 'admin' ? '/admin-dashboard' : '/user-dashboard'}>
+              {/* For normal users, go to /orders (Cart + My Orders); admins go to /admin-dashboard */}
+              <Link to={user?.role === "admin" ? "/admin-dashboard" : "/orders"}>
                 <Button variant="ghost" size="sm">
                   <User className="h-4 w-4 mr-2" />
                   {user?.name}
@@ -74,7 +81,11 @@ export const Header = () => {
             className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </nav>
@@ -92,10 +103,11 @@ export const Header = () => {
               {link.label}
             </Link>
           ))}
+
           {isAuthenticated ? (
             <>
               <Link
-                to={user?.role === 'admin' ? '/admin-dashboard' : '/user-dashboard'}
+                to={user?.role === "admin" ? "/admin-dashboard" : "/orders"}
                 className="block py-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
