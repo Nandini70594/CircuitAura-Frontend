@@ -4,7 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
-  base: './', // ✅ Fixes MIME type and path issues on Netlify
+  base: '/', 
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
