@@ -37,9 +37,9 @@ const isValidEmail = (email: string): boolean => {
 const isValidName = (name: string): boolean => {
   const trimmed = name.trim();
   const minLength = trimmed.length >= 2;
-  const onlyLettersSpaces = /^[a-zA-Z\s]+$/.test(trimmed);
-  const notJustSpaces = trimmed !== trimmed.replace(/\s/g, '');
-  return minLength && onlyLettersSpaces && notJustSpaces;
+  const onlyLettersSpaces = /^[a-zA-Z\s]+$/.test(trimmed);  // Letters + spaces ONLY
+  const hasContent = trimmed !== trimmed.replace(/\s/g, ''); // Not just spaces
+  return minLength && onlyLettersSpaces && hasContent;
 };
 
 export const AuthModal = ({

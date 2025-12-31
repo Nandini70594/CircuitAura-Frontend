@@ -25,7 +25,7 @@ const Products = () => {
   const { isAuthenticated } = useAuth();
   const { toast } = useToast();
   const { addItem } = useCart();
-  const navigate = useNavigate();  // ✅ ADD THIS
+  const navigate = useNavigate();  
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -54,7 +54,6 @@ const Products = () => {
       setAuthModalOpen(true);
       return;
     }
-    // ✅ JUST ADD TO CART - STAY ON PAGE
     addItem({
       productId: product.id,
       name: product.name,
@@ -70,7 +69,6 @@ const Products = () => {
       setAuthModalOpen(true);
       return;
     }
-    // ✅ ADD TO CART + REDIRECT TO ORDERS
     addItem({
       productId: product.id,
       name: product.name,
@@ -78,7 +76,6 @@ const Products = () => {
       image: getImageUrl(product.image_url),
       type: "product" as const,
     }, 1);
-    // ✅ USE NAVIGATE INSTEAD OF window.location.href
     navigate("/orders?tab=cart");
   };
 

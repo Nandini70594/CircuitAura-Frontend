@@ -2,6 +2,10 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export const API = {
   BASE: API_BASE_URL,
+  AUTH: {
+    LOGIN: `${API_BASE_URL}/api/auth/login`,
+    SIGNUP: `${API_BASE_URL}/api/auth/signup`,
+  },
   KITS: `${API_BASE_URL}/api/kits`,
   PRODUCTS: `${API_BASE_URL}/api/products`,
   ORDERS: `${API_BASE_URL}/api/orders`,
