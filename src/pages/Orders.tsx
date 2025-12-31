@@ -35,7 +35,6 @@ const Orders = () => {
     address: '' 
   });
 
-  // VALIDATION
   const isPhoneValid = address.phone.length === 10 && /^\d{10}$/.test(address.phone);
   const isPincodeValid = address.pincode.length === 6 && /^\d{6}$/.test(address.pincode);
   const isFormValid = address.name.trim() && isPhoneValid && isPincodeValid && address.city.trim() && address.address.trim();
@@ -358,7 +357,7 @@ const Orders = () => {
               </Card>
             </TabsContent>
 
-            {/* ✅ FIXED OVERLAP - More padding + better positioning */}
+            {/*  */}
             <TabsContent value="orders">
               <Card>
                 <CardHeader className="py-3">
@@ -373,7 +372,7 @@ const Orders = () => {
                       {orders.map((order) => (
                         <Card key={order.id} className="p-3 hover:shadow-md border-border"> {/* Changed p-4 to p-3 */}
                           <div className="relative">
-                            {/* Status + Button - Fixed positioning with more space */}
+                            {/* Status + Button */}
                             <div className="flex items-center gap-1.5 absolute top-2 right-2">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                                 order.status === 'delivered' ? 'bg-green-100 text-green-800' :
@@ -383,7 +382,7 @@ const Orders = () => {
                                 {order.status}
                               </span>
                               
-                              {/* Cancel Button - Smaller + Next to Status */}
+                              {/* Cancel Button */}
                               {order.status === 'pending' && (
                                 <Button
                                   variant="outline"
@@ -395,7 +394,7 @@ const Orders = () => {
                                 </Button>
                               )}
                               
-                              {/* Remove Button - Smaller + Next to Status */}
+                              {/* Remove Button*/}
                               {order.status === 'cancelled' && (
                                 <Button
                                   variant="destructive"
@@ -409,7 +408,7 @@ const Orders = () => {
                             </div>
 
                             {/* Content with EXTRA padding for status+button - Reduced padding */}
-                            <div className="pl-2 pr-24 pt-8 pb-1"> {/* Changed pr-28 to pr-24, pb-2 to pb-1 */}
+                            <div className="pl-2 pr-24 pt-8 pb-1"> 
                               <div className="mb-1"> {/* Reduced mb-2 to mb-1 */}
                                 <p className="font-bold text-sm">₹{order.total_amount}</p>
                               </div>

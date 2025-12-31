@@ -52,7 +52,6 @@ const KitDetail = () => {
       toast({ title: "Login required", description: "Please login first" });
       return;
     }
-    // ✅ JUST ADD TO CART - STAY ON PAGE
     addItem({
       productId: kit.id,
       name: kit.name,
@@ -68,7 +67,6 @@ const KitDetail = () => {
       toast({ title: "Login required", description: "Please login first" });
       return;
     }
-    // ✅ ADD TO CART + REDIRECT TO ORDERS
     addItem({
       productId: kit.id,
       name: kit.name,
@@ -161,7 +159,7 @@ const KitDetail = () => {
 
             <Separator />
 
-            {/* ✅ BUTTONS - SAME AS PRODUCTS */}
+            {/* */}
             <div className="grid grid-cols-3 gap-2 pt-2">
               {/* BUY NOW - REDIRECTS TO ORDERS */}
               <Button

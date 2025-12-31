@@ -102,7 +102,7 @@ const About = () => {
           </Card>
         </div>
 
-      {/* Founder / Team Section - LARGER IMAGE, SAME CIRCLE SIZE */}
+      {/* Founder / Team Section */}
 <div className="max-w-4xl mx-auto">
   <Card>
     <CardContent className="pt-6">
@@ -137,7 +137,7 @@ const About = () => {
 
 
 
-        {/* Early-stage note instead of awards */}
+        {/* Early-stage note */}
         <div className="mt-16 text-center">
           <h2 className="text-2xl font-bold mb-4">Where We Are Now</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-6">

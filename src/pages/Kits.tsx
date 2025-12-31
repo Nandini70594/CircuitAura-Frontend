@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { API } from "@/config/api";
 
-/* ================= TYPES ================= */
 
 interface Kit {
   id: number;
@@ -20,15 +19,12 @@ interface Kit {
   included?: string;
 }
 
-/* ================= HELPERS ================= */
 
-// 🔒 DO NOT MODIFY SUPABASE URL
 const getImageUrl = (url?: string) => {
   if (!url) return "https://via.placeholder.com/400x300?text=No+Image";
   return url.trim();
 };
 
-/* ================= COMPONENT ================= */
 
 const Kits = () => {
   const [kits, setKits] = useState<Kit[]>([]);
@@ -40,7 +36,6 @@ const Kits = () => {
   const { addItem } = useCart();
   const { toast } = useToast();
 
-  /* ================= FETCH ================= */
 
   useEffect(() => {
     const fetchKits = async () => {
@@ -64,7 +59,6 @@ const Kits = () => {
     fetchKits();
   }, [toast]);
 
-  /* ================= FILTER ================= */
 
   const filteredKits = kits.filter((kit) =>
     `${kit.name} ${kit.description} ${kit.included || ""}`
@@ -72,7 +66,6 @@ const Kits = () => {
       .includes(searchTerm.toLowerCase())
   );
 
-  /* ================= ACTIONS ================= */
 
   const handleAddToCart = (kit: Kit) => {
     if (!isAuthenticated) {
@@ -102,7 +95,6 @@ const Kits = () => {
     );
   };
 
-  /* ================= LOADING ================= */
 
   if (loading) {
     return (
@@ -112,7 +104,6 @@ const Kits = () => {
     );
   }
 
-  /* ================= RENDER ================= */
 
   return (
     <div className="min-h-screen py-12 bg-background">

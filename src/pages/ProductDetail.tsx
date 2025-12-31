@@ -67,7 +67,6 @@ const ProductDetail = () => {
       toast({ title: "Login required", description: "Please login first" });
       return;
     }
-    // ✅ ADD TO CART + REDIRECT TO ORDERS
     addItem({
       productId: product.id,
       name: product.name,
@@ -178,7 +177,7 @@ const ProductDetail = () => {
 
             <Separator />
 
-            {/* ✅ BUTTONS - SAME AS KITS */}
+            {/* ✅ BUTTONS*/}
             <div className="grid grid-cols-3 gap-2 pt-2">
               {/* BUY NOW - REDIRECTS TO ORDERS */}
               <Button
