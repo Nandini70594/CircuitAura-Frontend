@@ -1,14 +1,21 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { Package, BookOpen, FileText, Plus, Edit, Trash2 } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
+import { Package, BookOpen, FileText, Plus, Edit, Trash2 } from "lucide-react";
+import { API } from "@/config/api"; // ✅ important
 
 const AdminDashboard = () => {
   const { user, isAuthenticated, token } = useAuth();
@@ -16,31 +23,35 @@ const AdminDashboard = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'admin') {
-      navigate('/auth');
+    if (!isAuthenticated || user?.role !== "admin") {
+      navigate("/auth");
     }
   }, [isAuthenticated, user, navigate]);
 
-  // Product states
-  const [productName, setProductName] = useState('');
-  const [productDescription, setProductDescription] = useState('');
-  const [productPrice, setProductPrice] = useState('');
-  const [productFeatures, setProductFeatures] = useState('');
-  const [productIncluded, setProductIncluded] = useState('');
+  // Products
+  const [productName, setProductName] = useState("");
+  const [productDescription, setProductDescription] = useState("");
+  const [productPrice, setProductPrice] = useState("");
+  const [productFeatures, setProductFeatures] = useState("");
+  const [productIncluded, setProductIncluded] = useState("");
   const [productImageFile, setProductImageFile] = useState<File | null>(null);
-  const [productImageUrl, setProductImageUrl] = useState('');
+  const [productImageUrl, setProductImageUrl] = useState("");
   const [editProductId, setEditProductId] = useState<number | null>(null);
   const [recentProducts, setRecentProducts] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await fetch('/api/products');
-        if (!res.ok) throw new Error('Failed to fetch products');
+        const res = await fetch(`${API.BASE}/products`);
+        if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
         setRecentProducts(data);
       } catch {
-        toast({ title: 'Error', description: 'Could not load products.', variant: 'destructive' });
+        toast({
+          title: "Error",
+          description: "Could not load products.",
+          variant: "destructive",
+        });
       }
     };
     fetchProducts();
@@ -55,15 +66,15 @@ const AdminDashboard = () => {
 
   const uploadFile = async (file: File) => {
     const formData = new FormData();
-    formData.append('file', file);
-    const res = await fetch('/api/upload', {
-      method: 'POST',
+    formData.append("file", file);
+    const res = await fetch(`${API.BASE}/upload`, {
+      method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
       body: formData,
     });
-    if (!res.ok) throw new Error('File upload failed');
+    if (!res.ok) throw new Error("File upload failed");
     const data = await res.json();
     return data.url;
   };
@@ -71,14 +82,14 @@ const AdminDashboard = () => {
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      let imageUrl = '';
+      let imageUrl = "";
       if (productImageFile) {
         imageUrl = await uploadFile(productImageFile);
       }
-      const response = await fetch('/api/products', {
-        method: 'POST',
+      const response = await fetch(`${API.BASE}/products`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -90,45 +101,52 @@ const AdminDashboard = () => {
           image_url: imageUrl,
         }),
       });
-      if (!response.ok) throw new Error('Failed to add product');
-      toast({ title: 'Product added!', description: 'New product has been added successfully.' });
-      setProductName('');
-      setProductDescription('');
-      setProductPrice('');
-      setProductFeatures('');
-      setProductIncluded('');
+      if (!response.ok) throw new Error("Failed to add product");
+      toast({
+        title: "Product added!",
+        description: "New product has been added successfully.",
+      });
+      setProductName("");
+      setProductDescription("");
+      setProductPrice("");
+      setProductFeatures("");
+      setProductIncluded("");
       setProductImageFile(null);
-      setProductImageUrl('');
+      setProductImageUrl("");
       const newProduct = await response.json();
       setRecentProducts((prev) => [newProduct, ...prev]);
     } catch {
-      toast({ title: 'Error', description: 'Failed to add product.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to add product.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleEditClick = (product: any) => {
-  setEditProductId(product.id);
-  setProductName(product.name);
-  setProductDescription(product.description);
-  setProductPrice(product.price);
-  setProductFeatures(product.features || '');
-  setProductIncluded(product.included || '');
-  setProductImageUrl(product.image_url || '');
-  setProductImageFile(null);
-};
+    setEditProductId(product.id);
+    setProductName(product.name);
+    setProductDescription(product.description);
+    setProductPrice(product.price);
+    setProductFeatures(product.features || "");
+    setProductIncluded(product.included || "");
+    setProductImageUrl(product.image_url || "");
+    setProductImageFile(null);
+  };
 
-const cancelEdit = () => {
-  setEditProductId(null);
-  setProductName('');
-  setProductDescription('');
-  setProductPrice('');
-  setProductFeatures('');
-  setProductIncluded('');
-  setProductImageFile(null);
-  setProductImageUrl('');
-};
+  const cancelEdit = () => {
+    setEditProductId(null);
+    setProductName("");
+    setProductDescription("");
+    setProductPrice("");
+    setProductFeatures("");
+    setProductIncluded("");
+    setProductImageFile(null);
+    setProductImageUrl("");
+  };
 
-const handleUpdateProduct = async (e: React.FormEvent) => {
+  const handleUpdateProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editProductId) return;
     try {
@@ -136,10 +154,10 @@ const handleUpdateProduct = async (e: React.FormEvent) => {
       if (productImageFile) {
         imageUrl = await uploadFile(productImageFile);
       }
-      const response = await fetch(`/api/products/${editProductId}`, {
-        method: 'PUT',
+      const response = await fetch(`${API.BASE}/products/${editProductId}`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
@@ -151,46 +169,56 @@ const handleUpdateProduct = async (e: React.FormEvent) => {
           image_url: imageUrl,
         }),
       });
-      if (!response.ok) throw new Error('Failed to update product');
-      toast({ title: 'Product updated', variant: 'success' });
+      if (!response.ok) throw new Error("Failed to update product");
+      toast({ title: "Product updated", variant: "success" });
       const updatedProduct = await response.json();
-      setRecentProducts((prev) => prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)));
+      setRecentProducts((prev) =>
+        prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p))
+      );
       cancelEdit();
     } catch {
-      toast({ title: 'Error', description: 'Failed to update product.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to update product.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleDeleteProduct = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
     try {
-      const response = await fetch(`/api/products/${id}`, {
-        method: 'DELETE',
+      const response = await fetch(`${API.BASE}/products/${id}`, {
+        method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to delete product');
-      toast({ title: 'Product deleted', variant: 'success' });
+      if (!response.ok) throw new Error("Failed to delete product");
+      toast({ title: "Product deleted", variant: "success" });
       setRecentProducts((prev) => prev.filter((p) => p.id !== id));
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete product.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to delete product.",
+        variant: "destructive",
+      });
     }
   };
 
-
-// Kits states
-  const [kitName, setKitName] = useState('');
-  const [kitDescription, setKitDescription] = useState('');
-  const [kitPrice, setKitPrice] = useState('');
+  // Kits
+  const [kitName, setKitName] = useState("");
+  const [kitDescription, setKitDescription] = useState("");
+  const [kitPrice, setKitPrice] = useState("");
   const [kitImageFile, setKitImageFile] = useState<File | null>(null);
-  const [kitImageUrl, setKitImageUrl] = useState('');
+  const [kitImageUrl, setKitImageUrl] = useState("");
   const [kitBookletFile, setKitBookletFile] = useState<File | null>(null);
-  const [kitBookletName, setKitBookletName] = useState('');
-  const [kitBookletUrl, setKitBookletUrl] = useState(''); 
+  const [kitBookletName, setKitBookletName] = useState("");
+  const [kitBookletUrl, setKitBookletUrl] = useState("");
   const [recentKits, setRecentKits] = useState<any[]>([]);
   const [editKitId, setEditKitId] = useState<number | null>(null);
-  const [kitIncluded, setKitIncluded] = useState('');  // ✅ NEW
+  const [kitIncluded, setKitIncluded] = useState("");
 
   const onKitImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -207,167 +235,186 @@ const handleUpdateProduct = async (e: React.FormEvent) => {
   };
 
   const handleEditKitClick = (kit: any) => {
-  setEditKitId(kit.id);
-  setKitName(kit.name);
-  setKitDescription(kit.description);
-  setKitPrice(kit.price);
-  setKitImageUrl(kit.image_url || '');
-  setKitImageFile(null);
-  setKitBookletUrl(kit.pdf_url || '');
-  setKitBookletName(kit.pdf_url ? kit.pdf_url.split('/').pop() : '');
-  setKitBookletFile(null);
-  setKitIncluded(kit.included || '');  
-};
-
-const cancelEditKit = () => {
-  setEditKitId(null);
-  setKitName('');
-  setKitDescription('');
-  setKitPrice('');
-  setKitImageFile(null);
-  setKitImageUrl('');
-  setKitBookletFile(null);
-  setKitBookletName('');
-  setKitBookletUrl('');
-  setKitIncluded('');  
-};
-
-useEffect(() => {
-  const fetchKits = async () => {
-    try {
-      const res = await fetch('/api/kits');
-      if (!res.ok) throw new Error('Failed to fetch kits');
-      const data = await res.json();
-      setRecentKits(data);
-    } catch {
-      toast({ title: 'Error', description: 'Could not load kits.', variant: 'destructive' });
-    }
+    setEditKitId(kit.id);
+    setKitName(kit.name);
+    setKitDescription(kit.description);
+    setKitPrice(kit.price);
+    setKitImageUrl(kit.image_url || "");
+    setKitImageFile(null);
+    setKitBookletUrl(kit.pdf_url || "");
+    setKitBookletName(kit.pdf_url ? kit.pdf_url.split("/").pop() : "");
+    setKitBookletFile(null);
+    setKitIncluded(kit.included || "");
   };
-  fetchKits();
-}, [toast]);
 
+  const cancelEditKit = () => {
+    setEditKitId(null);
+    setKitName("");
+    setKitDescription("");
+    setKitPrice("");
+    setKitImageFile(null);
+    setKitImageUrl("");
+    setKitBookletFile(null);
+    setKitBookletName("");
+    setKitBookletUrl("");
+    setKitIncluded("");
+  };
+
+  useEffect(() => {
+    const fetchKits = async () => {
+      try {
+        const res = await fetch(`${API.BASE}/kits`);
+        if (!res.ok) throw new Error("Failed to fetch kits");
+        const data = await res.json();
+        setRecentKits(data);
+      } catch {
+        toast({
+          title: "Error",
+          description: "Could not load kits.",
+          variant: "destructive",
+        });
+      }
+    };
+    fetchKits();
+  }, [toast]);
 
   const handleAddKit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    let imageUrl = '';
-    let bookletUrl = '';
-    if (kitImageFile) imageUrl = await uploadFile(kitImageFile);
-    if (kitBookletFile) bookletUrl = await uploadFile(kitBookletFile);
+    e.preventDefault();
+    try {
+      let imageUrl = "";
+      let bookletUrl = "";
+      if (kitImageFile) imageUrl = await uploadFile(kitImageFile);
+      if (kitBookletFile) bookletUrl = await uploadFile(kitBookletFile);
 
-    const response = await fetch('/api/kits', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        name: kitName,
-        description: kitDescription,
-        price: kitPrice,
-        image_url: imageUrl,
-        pdf_url: bookletUrl,
-        included: kitIncluded,
-      }),
-    });
-    if (!response.ok) throw new Error('Failed to add kit');
-    const newKit = await response.json();
+      const response = await fetch(`${API.BASE}/kits`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: kitName,
+          description: kitDescription,
+          price: kitPrice,
+          image_url: imageUrl,
+          pdf_url: bookletUrl,
+          included: kitIncluded,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to add kit");
+      const newKit = await response.json();
 
-    toast({ title: 'Educational kit added!', description: 'New educational kit has been added successfully.' });
+      toast({
+        title: "Educational kit added!",
+        description: "New educational kit has been added successfully.",
+      });
 
-    setKitName('');
-    setKitDescription('');
-    setKitPrice('');
-    setKitImageFile(null);
-    setKitImageUrl('');
-    setKitBookletFile(null);
-    setKitBookletName('');
-    setKitBookletUrl('');
-
-    // Optionally add newKit to the recent kits list state:
-    setRecentKits((prev) => [newKit, ...prev]);
-  } catch {
-    toast({ title: 'Error', description: 'Failed to add kit.', variant: 'destructive' });
-  }
-};
-
+      setKitName("");
+      setKitDescription("");
+      setKitPrice("");
+      setKitImageFile(null);
+      setKitImageUrl("");
+      setKitBookletFile(null);
+      setKitBookletName("");
+      setKitBookletUrl("");
+      setRecentKits((prev) => [newKit, ...prev]);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to add kit.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleUpdateKit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!editKitId) return;
-  try {
-    let imageUrl = kitImageUrl;
-    let bookletUrl = '';
+    e.preventDefault();
+    if (!editKitId) return;
+    try {
+      let imageUrl = kitImageUrl;
+      let bookletUrl = "";
 
-    if (kitImageFile) imageUrl = await uploadFile(kitImageFile);
-    if (kitBookletFile) bookletUrl = await uploadFile(kitBookletFile);
+      if (kitImageFile) imageUrl = await uploadFile(kitImageFile);
+      if (kitBookletFile) bookletUrl = await uploadFile(kitBookletFile);
 
-    const response = await fetch(`/api/kits/${editKitId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        name: kitName,
-        description: kitDescription,
-        price: kitPrice,
-        image_url: imageUrl,
-        pdf_url: bookletUrl || kitBookletName || '',
-        included: kitIncluded,
-      }),
-    });
-    if (!response.ok) throw new Error('Failed to update kit');
-    const updatedKit = await response.json();
-    toast({ title: 'Kit updated', variant: 'success' });
-    setRecentKits((prev) => prev.map((k) => (k.id === updatedKit.id ? updatedKit : k)));
-    cancelEditKit();
-  } catch {
-    toast({ title: 'Error', description: 'Failed to update kit.', variant: 'destructive' });
-  }
-};
+      const response = await fetch(`${API.BASE}/kits/${editKitId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: kitName,
+          description: kitDescription,
+          price: kitPrice,
+          image_url: imageUrl,
+          pdf_url: bookletUrl || kitBookletName || "",
+          included: kitIncluded,
+        }),
+      });
+      if (!response.ok) throw new Error("Failed to update kit");
+      const updatedKit = await response.json();
+      toast({ title: "Kit updated", variant: "success" });
+      setRecentKits((prev) =>
+        prev.map((k) => (k.id === updatedKit.id ? updatedKit : k))
+      );
+      cancelEditKit();
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to update kit.",
+        variant: "destructive",
+      });
+    }
+  };
 
+  const handleDeleteKit = async (id: number) => {
+    if (!window.confirm("Are you sure you want to delete this kit?")) return;
+    try {
+      const response = await fetch(`${API.BASE}/kits/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to delete kit");
+      toast({ title: "Kit deleted", variant: "success" });
+      setRecentKits((prev) => prev.filter((k) => k.id !== id));
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to delete kit.",
+        variant: "destructive",
+      });
+    }
+  };
 
-const handleDeleteKit = async (id: number) => {
-  if (!window.confirm('Are you sure you want to delete this kit?')) return;
-  try {
-    const response = await fetch(`/api/kits/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!response.ok) throw new Error('Failed to delete kit');
-    toast({ title: 'Kit deleted', variant: 'success' });
-    setRecentKits((prev) => prev.filter((k) => k.id !== id));
-  } catch {
-    toast({ title: 'Error', description: 'Failed to delete kit.', variant: 'destructive' });
-  }
-};
-
-
-// --- RESOURCES TAB STATES & HANDLERS ---
-  const [resourceType, setResourceType] = useState('');
-  const [resourceTitle, setResourceTitle] = useState('');
-  const [resourceDescription, setResourceDescription] = useState('');
+  // Resources
+  const [resourceType, setResourceType] = useState("");
+  const [resourceTitle, setResourceTitle] = useState("");
+  const [resourceDescription, setResourceDescription] = useState("");
   const [resourceFile, setResourceFile] = useState<File | null>(null);
-  const [resourceFileUrl, setResourceFileUrl] = useState('');
-  const [resourceFileName, setResourceFileName] = useState('');
-  const [resourceVideoUrl, setResourceVideoUrl] = useState('');
-  const [resourcePdfUrl, setResourcePdfUrl] = useState('');
-  const [resourceReadTime, setResourceReadTime] = useState('');
+  const [resourceFileUrl, setResourceFileUrl] = useState("");
+  const [resourceFileName, setResourceFileName] = useState("");
+  const [resourceVideoUrl, setResourceVideoUrl] = useState("");
+  const [resourcePdfUrl, setResourcePdfUrl] = useState("");
+  const [resourceReadTime, setResourceReadTime] = useState("");
   const [recentResources, setRecentResources] = useState<any[]>([]);
   const [editResourceId, setEditResourceId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchResources = async () => {
       try {
-        const res = await fetch('/api/resources');
-        if (!res.ok) throw new Error('Failed to fetch resources');
+        const res = await fetch(`${API.BASE}/resources`);
+        if (!res.ok) throw new Error("Failed to fetch resources");
         const data = await res.json();
         setRecentResources(data);
       } catch {
-        toast({ title: 'Error', description: 'Could not load resources.', variant: 'destructive' });
+        toast({
+          title: "Error",
+          description: "Could not load resources.",
+          variant: "destructive",
+        });
       }
     };
     fetchResources();
@@ -383,72 +430,80 @@ const handleDeleteKit = async (id: number) => {
 
   const cancelEditResource = () => {
     setEditResourceId(null);
-    setResourceType('tutorial');
-    setResourceTitle('');
-    setResourceDescription('');
-    setResourceReadTime('');
+    setResourceType("tutorial");
+    setResourceTitle("");
+    setResourceDescription("");
+    setResourceReadTime("");
     setResourceFile(null);
-    setResourceFileUrl('');
-    setResourceFileName('');
-    setResourceVideoUrl('');
-    setResourcePdfUrl('');
+    setResourceFileUrl("");
+    setResourceFileName("");
+    setResourceVideoUrl("");
+    setResourcePdfUrl("");
   };
 
   const handleEditResourceClick = (resource: any) => {
     setEditResourceId(resource.id);
     setResourceType(resource.resource_type);
     setResourceTitle(resource.title);
-    setResourceDescription(resource.description || '');
-    setResourceReadTime(resource.read_time || '');
-    setResourceFileUrl(resource.file_url || '');
+    setResourceDescription(resource.description || "");
+    setResourceReadTime(resource.read_time || "");
+    setResourceFileUrl(resource.file_url || "");
     setResourceFile(null);
-    setResourceFileName('');
-    setResourceVideoUrl(resource.video_url || '');
-    setResourcePdfUrl(resource.pdf_url || '');
+    setResourceFileName("");
+    setResourceVideoUrl(resource.video_url || "");
+    setResourcePdfUrl(resource.pdf_url || "");
   };
 
   const handleAddResource = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      let fileUrl = '';
-      let pdfUrl = '';
-      if (resourceType === 'tutorial' && resourceFile) fileUrl = await uploadFile(resourceFile);
-      if (resourceType === 'download' && resourceFile) pdfUrl = await uploadFile(resourceFile);
+      let fileUrl = "";
+      let pdfUrl = "";
+      if (resourceType === "tutorial" && resourceFile)
+        fileUrl = await uploadFile(resourceFile);
+      if (resourceType === "download" && resourceFile)
+        pdfUrl = await uploadFile(resourceFile);
 
-      const response = await fetch('/api/resources', {
-        method: 'POST',
+      const response = await fetch(`${API.BASE}/resources`, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           resource_type: resourceType,
           title: resourceTitle,
           description: resourceDescription,
-          file_url: resourceType === 'tutorial' ? fileUrl : '',
-          video_url: resourceType === 'video' ? resourceVideoUrl : '',
-          pdf_url: resourceType === 'download' ? pdfUrl : '',
-          read_time: resourceType === 'tutorial' ? resourceReadTime : '',
+          file_url: resourceType === "tutorial" ? fileUrl : "",
+          video_url: resourceType === "video" ? resourceVideoUrl : "",
+          pdf_url: resourceType === "download" ? pdfUrl : "",
+          read_time: resourceType === "tutorial" ? resourceReadTime : "",
         }),
       });
-      if (!response.ok) throw new Error('Failed to add resource');
+      if (!response.ok) throw new Error("Failed to add resource");
       const newResource = await response.json();
 
-      toast({ title: 'Resource added!', description: 'New learning resource added successfully.' });
+      toast({
+        title: "Resource added!",
+        description: "New learning resource added successfully.",
+      });
 
-      // Reset resource fields
-      setResourceType('tutorial');
-      setResourceTitle('');
-      setResourceDescription('');
-      setResourceReadTime('');
+      setResourceType("tutorial");
+      setResourceTitle("");
+      setResourceDescription("");
+      setResourceReadTime("");
       setResourceFile(null);
-      setResourceFileUrl('');
-      setResourceFileName('');
-      setResourceVideoUrl('');
-      setResourcePdfUrl('');
+      setResourceFileUrl("");
+      setResourceFileName("");
+      setResourceVideoUrl("");
+      setResourcePdfUrl("");
       setRecentResources((prev) => [newResource, ...prev]);
     } catch {
-      toast({ title: 'Error', description: 'Failed to add resource.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to add resource.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -458,120 +513,126 @@ const handleDeleteKit = async (id: number) => {
     try {
       let fileUrl = resourceFileUrl;
       let pdfUrl = resourcePdfUrl;
-      if (resourceType === 'tutorial' && resourceFile) fileUrl = await uploadFile(resourceFile);
-      if (resourceType === 'download' && resourceFile) pdfUrl = await uploadFile(resourceFile);
+      if (resourceType === "tutorial" && resourceFile)
+        fileUrl = await uploadFile(resourceFile);
+      if (resourceType === "download" && resourceFile)
+        pdfUrl = await uploadFile(resourceFile);
 
-      const response = await fetch(`/api/resources/${editResourceId}`, {
-        method: 'PUT',
+      const response = await fetch(`${API.BASE}/resources/${editResourceId}`, {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           resource_type: resourceType,
           title: resourceTitle,
           description: resourceDescription,
-          file_url: resourceType === 'tutorial' ? fileUrl : '',
-          video_url: resourceType === 'video' ? resourceVideoUrl : '',
-          pdf_url: resourceType === 'download' ? pdfUrl : '',
-          read_time: resourceType === 'tutorial' ? resourceReadTime : '',
+          file_url: resourceType === "tutorial" ? fileUrl : "",
+          video_url: resourceType === "video" ? resourceVideoUrl : "",
+          pdf_url: resourceType === "download" ? pdfUrl : "",
+          read_time: resourceType === "tutorial" ? resourceReadTime : "",
         }),
       });
-      if (!response.ok) throw new Error('Failed to update resource');
+      if (!response.ok) throw new Error("Failed to update resource");
       const updatedResource = await response.json();
 
-      toast({ title: 'Resource updated', variant: 'success' });
-      setRecentResources((prev) => prev.map((r) => (r.id === updatedResource.id ? updatedResource : r)));
+      toast({ title: "Resource updated", variant: "success" });
+      setRecentResources((prev) =>
+        prev.map((r) => (r.id === updatedResource.id ? updatedResource : r))
+      );
       cancelEditResource();
     } catch {
-      toast({ title: 'Error', description: 'Failed to update resource.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to update resource.",
+        variant: "destructive",
+      });
     }
   };
 
   const handleDeleteResource = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this resource?')) return;
+    if (!window.confirm("Are you sure you want to delete this resource?"))
+      return;
     try {
-      const response = await fetch(`/api/resources/${id}`, {
-        method: 'DELETE',
+      const response = await fetch(`${API.BASE}/resources/${id}`, {
+        method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to delete resource');
-      toast({ title: 'Resource deleted', variant: 'success' });
+      if (!response.ok) throw new Error("Failed to delete resource");
+      toast({ title: "Resource deleted", variant: "success" });
       setRecentResources((prev) => prev.filter((r) => r.id !== id));
     } catch {
-      toast({ title: 'Error', description: 'Failed to delete resource.', variant: 'destructive' });
+      toast({
+        title: "Error",
+        description: "Failed to delete resource.",
+        variant: "destructive",
+      });
     }
   };
 
+  // Admin orders tab
+  const [orders, setOrders] = useState<any[]>([]);
 
-const [orders, setOrders] = useState<any[]>([]);
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch(`${API.BASE}/orders`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) throw new Error("Failed to fetch orders");
+        const data = await res.json();
+        setOrders(data);
+      } catch {
+        toast({
+          title: "Error",
+          description: "Could not load orders.",
+          variant: "destructive",
+        });
+      }
+    };
+    if (token) fetchOrders();
+  }, [token, toast]);
 
-useEffect(() => {
-  const fetchOrders = async () => {
+  const handleStatusChange = async (orderId: number, newStatus: string) => {
     try {
-      const res = await fetch("/api/orders", {
-        headers: { Authorization: `Bearer ${token}` },
+      const res = await fetch(`${API.BASE}/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
       });
-      if (!res.ok) throw new Error("Failed to fetch orders");
-      const data = await res.json();
-      setOrders(data);
-    } catch {
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        toast({
+          title: "Error",
+          description: errorData.message || "Failed to update status",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+      );
+      toast({
+        title: "Status updated",
+        description: `Order status changed to ${newStatus}`,
+      });
+    } catch (error) {
+      console.error("Status update failed:", error);
       toast({
         title: "Error",
-        description: "Could not load orders.",
+        description: "Failed to update status",
         variant: "destructive",
       });
     }
   };
-  if (token) fetchOrders();
-}, [token, toast]);
-
-  
-const handleStatusChange = async (
-  orderId: number,
-  newStatus: string
-) => {
-  try {
-    const res = await fetch(`/api/orders/${orderId}/status`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ status: newStatus }),
-    });
-
-    if (!res.ok) {
-      const errorData = await res.json();
-      toast({
-        title: "Error",
-        description: errorData.message || "Failed to update status",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setOrders((prev) =>
-      prev.map((o) =>
-        o.id === orderId ? { ...o, status: newStatus } : o
-      )
-    );
-    toast({
-      title: "Status updated",
-      description: `Order status changed to ${newStatus}`,
-    });
-  } catch (error) {
-    console.error("Status update failed:", error);
-    toast({
-      title: "Error",
-      description: "Failed to update status",
-      variant: "destructive",
-    });
-  }
-};
-
 
   if (!user) return null;
 
@@ -580,16 +641,18 @@ const handleStatusChange = async (
       <div className="container mx-auto px-4">
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage products, kits, and learning resources</p>
+          <p className="text-muted-foreground">
+            Manage products, kits, and learning resources
+          </p>
         </div>
 
         <Tabs defaultValue="products" className="w-full">
-  <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
-    <TabsTrigger value="products">Products</TabsTrigger>
-    <TabsTrigger value="kits">Educational Kits</TabsTrigger>
-    <TabsTrigger value="resources">Learning Resources</TabsTrigger>
-    <TabsTrigger value="orders">Orders</TabsTrigger>
-  </TabsList>
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 mb-8">
+            <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="kits">Educational Kits</TabsTrigger>
+            <TabsTrigger value="resources">Learning Resources</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+          </TabsList>
 
 
           <TabsContent value="products">
@@ -938,121 +1001,133 @@ const handleStatusChange = async (
           </TabsContent>
 
 <TabsContent value="orders">
-  <Card>
-    <CardHeader className="py-3">
-      <CardTitle className="text-xl">Orders</CardTitle>
-      <CardDescription className="text-sm">
-        All customer orders
-      </CardDescription>
-    </CardHeader>
-    <CardContent className="p-0">
-      {orders.length === 0 && (
-        <div className="p-6 text-center">
-          <p className="text-sm text-muted-foreground">No orders yet.</p>
-        </div>
-      )}
+            <Card>
+              <CardHeader className="py-3">
+                <CardTitle className="text-xl">Orders</CardTitle>
+                <CardDescription className="text-sm">
+                  All customer orders
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                {orders.length === 0 && (
+                  <div className="p-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      No orders yet.
+                    </p>
+                  </div>
+                )}
 
-      <div className="grid gap-4 p-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        {orders.map((order) => (
-          <div
-            key={order.id}
-            className="border border-border rounded-md px-4 py-3 space-y-2 text-sm bg-background hover:shadow-sm transition-shadow"
-          >
-            {/* Row 1: customer + total */}
-            <div className="flex justify-between items-center">
-              <span className="font-semibold truncate max-w-[60%]">
-                {order.customer_name}
-              </span>
-              <span className="font-semibold">
-                ₹{order.total_amount}
-              </span>
-            </div>
+                <div className="grid gap-4 p-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                  {orders.map((order) => (
+                    <div
+                      key={order.id}
+                      className="border border-border rounded-md px-4 py-3 space-y-2 text-sm bg-background hover:shadow-sm transition-shadow"
+                    >
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold truncate max-w-[60%]">
+                          {order.customer_name}
+                        </span>
+                        <span className="font-semibold">
+                          ₹{order.total_amount}
+                        </span>
+                      </div>
 
-            {/* Row 2: phone + email SIDE BY SIDE */}
-            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-              <div className="flex items-center gap-1 truncate flex-1">
-                📞 {order.customer_phone || 'No phone'}
-              </div>
-              <div className="flex items-center gap-1 truncate flex-1">
-                ✉️ {order.customer_email}
-              </div>
-            </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 truncate flex-1">
+                          📞 {order.customer_phone || "No phone"}
+                        </div>
+                        <div className="flex items-center gap-1 truncate flex-1">
+                          ✉️ {order.customer_email}
+                        </div>
+                      </div>
 
-            {/* Row 3: city/pincode */}
-            <div className="text-xs text-muted-foreground">
-              📍 {order.customer_city || 'N/A'}, {order.customer_pincode || 'N/A'}
-            </div>
+                      <div className="text-xs text-muted-foreground">
+                        📍 {order.customer_city || "N/A"},{" "}
+                        {order.customer_pincode || "N/A"}
+                      </div>
 
-            {/* Row 4: address with label */}
-            <div className="text-xs text-muted-foreground break-words max-h-[40px] overflow-hidden">
-              <span className="font-medium text-foreground/80">Address: </span>
-              {order.customer_address || 'No address'}
-            </div>
+                      <div className="text-xs text-muted-foreground break-words max-h-[40px] overflow-hidden">
+                        <span className="font-medium text-foreground/80">
+                          Address:{" "}
+                        </span>
+                        {order.customer_address || "No address"}
+                      </div>
 
-            {/* Row 5: date/time */}
-            <div className="text-xs text-muted-foreground">
-              📅 {new Date(order.created_at).toLocaleDateString()}{" "}
-              {new Date(order.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-            </div>
+                      <div className="text-xs text-muted-foreground">
+                        📅 {new Date(order.created_at).toLocaleDateString()}{" "}
+                        {new Date(order.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </div>
 
-            {/* Row 6: items condensed */}
-            <div className="border-t border-border/60 pt-2 mt-1 space-y-1">
-              {order.items?.slice(0, 2).map((item: any) => (
-                <div
-                  key={item.product_id}
-                  className="flex justify-between text-xs"
-                >
-                  <span className="truncate max-w-[70%]">
-                    {item.product_name} × {item.quantity}
-                  </span>
-                  <span>₹{item.line_total}</span>
+                      <div className="border-t border-border/60 pt-2 mt-1 space-y-1">
+                        {order.items?.slice(0, 2).map((item: any) => (
+                          <div
+                            key={item.product_id}
+                            className="flex justify-between text-xs"
+                          >
+                            <span className="truncate max-w-[70%]">
+                              {item.product_name} × {item.quantity}
+                            </span>
+                            <span>₹{item.line_total}</span>
+                          </div>
+                        ))}
+                        {order.items && order.items.length > 2 && (
+                          <div className="text-xs text-muted-foreground">
+                            +{order.items.length - 2} more
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex justify-between items-center pt-2">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+                            order.status === "delivered"
+                              ? "bg-green-100 text-green-800"
+                              : order.status === "cancelled"
+                              ? "bg-red-100 text-red-800"
+                              : order.status === "paid" ||
+                                order.status === "shipped"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {order.status}
+                        </span>
+
+                        {order.status === "cancelled" ? (
+                          <button
+                            className="text-[10px] text-muted-foreground underline hover:text-foreground"
+                            onClick={() =>
+                              setOrders((prev) =>
+                                prev.filter((o) => o.id !== order.id)
+                              )
+                            }
+                          >
+                            Remove
+                          </button>
+                        ) : (
+                          <select
+                            className="border border-border rounded px-2 py-1 text-xs bg-background text-foreground hover:border-border focus:border-border focus:outline-none"
+                            value={order.status}
+                            onChange={(e) =>
+                              handleStatusChange(order.id, e.target.value)
+                            }
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="paid">Paid</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                          </select>
+                        )}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-              {order.items && order.items.length > 2 && (
-                <div className="text-xs text-muted-foreground">
-                  +{order.items.length - 2} more
-                </div>
-              )}
-            </div>
-
-            {/* Row 7: status badge + dropdown */}
-            <div className="flex justify-between items-center pt-2">
-              <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-                order.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                order.status === 'paid' || order.status === 'shipped' ? 'bg-blue-100 text-blue-800' :
-                'bg-yellow-100 text-yellow-800'
-              }`}>
-                {order.status}
-              </span>
-
-              {order.status === "cancelled" ? (
-                <button
-                  className="text-[10px] text-muted-foreground underline hover:text-foreground"
-                  onClick={() => setOrders((prev) => prev.filter((o) => o.id !== order.id))}
-                >
-                  Remove
-                </button>
-              ) : (
-                <select
-                  className="border border-border rounded px-2 py-1 text-xs bg-background text-foreground hover:border-border focus:border-border focus:outline-none"
-                  value={order.status}
-                  onChange={(e) => handleStatusChange(order.id, e.target.value)}
-                >
-                  <option value="pending">Pending</option>
-                  <option value="paid">Paid</option>
-                  <option value="shipped">Shipped</option>
-                  <option value="delivered">Delivered</option>
-                </select>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-</TabsContent>
-
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>

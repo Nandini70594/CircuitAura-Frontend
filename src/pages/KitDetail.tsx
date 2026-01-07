@@ -113,13 +113,14 @@ const KitDetail = () => {
           {/* IMAGE */}
           <div className="flex items-center justify-center">
             <img
-              src={getImageUrl(kit.image_url)}
-              alt={kit.name}
-              className="w-full h-auto max-h-96 object-cover rounded-lg shadow-lg"
-              onError={(e) => {
-                e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Image+Error';
-              }}
-            />
+  src={getImageUrl(kit.image_url)}
+  alt={kit.name}
+  className="w-full h-auto max-h-96 object-cover rounded-lg shadow-lg"
+  onError={(e) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = '/no-image.png';
+  }}
+/>
           </div>
 
           {/* DETAILS */}

@@ -117,13 +117,14 @@ const ProductDetail = () => {
           {/* IMAGE */}
           <div className="flex items-center justify-center">
             <img
-              src={getImageUrl(product.image_url)}
-              alt={product.name}
-              className="w-full h-auto max-h-96 object-cover rounded-lg shadow-lg"
-              onError={(e) => {
-                e.currentTarget.src = 'https://via.placeholder.com/400x300?text=Image+Error';
-              }}
-            />
+  src={getImageUrl(product.image_url)}
+  alt={product.name}
+  className="w-full h-auto max-h-96 object-cover rounded-lg shadow-lg"
+  onError={(e) => {
+    e.currentTarget.onerror = null; 
+    e.currentTarget.src = '/no-image.png'; 
+  }}
+/>
           </div>
 
           {/* DETAILS */}
@@ -177,7 +178,7 @@ const ProductDetail = () => {
 
             <Separator />
 
-            {/* ✅ BUTTONS*/}
+            {/* BUTTONS*/}
             <div className="grid grid-cols-3 gap-2 pt-2">
               {/* BUY NOW - REDIRECTS TO ORDERS */}
               <Button

@@ -137,14 +137,14 @@ const Kits = () => {
               {/* IMAGE */}
               <Link to={`/kits/${kit.id}`} className="block h-48 bg-muted">
                 <img
-                  src={getImageUrl(kit.image_url)}
-                  alt={kit.name}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src =
-                      "https://via.placeholder.com/400x300?text=Image+Error";
-                  }}
-                />
+  src={getImageUrl(kit.image_url)}
+  alt={kit.name}
+  className="w-full h-auto max-h-96 object-cover rounded-lg shadow-lg"
+  onError={(e) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = '/no-image.png';
+  }}
+/>
               </Link>
 
               {/* CONTENT */}
