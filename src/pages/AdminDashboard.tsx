@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react"
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -400,6 +401,7 @@ const AdminDashboard = () => {
   const [resourcePdfUrl, setResourcePdfUrl] = useState("");
   const [resourceReadTime, setResourceReadTime] = useState("");
   const [recentResources, setRecentResources] = useState<any[]>([]);
+  const recentFive = recentResources.slice(0, 5);
   const [editResourceId, setEditResourceId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -575,64 +577,99 @@ const AdminDashboard = () => {
 
   // Admin orders tab
   const [orders, setOrders] = useState<any[]>([]);
+  const [viewMode, setViewMode] = useState('active');  // NEW
+const [activeCount, setActiveCount] = useState(0);   // NEW
+const [historyCount, setHistoryCount] = useState(0); // NEW
+const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await fetch(`${API.BASE}/orders`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Failed to fetch orders");
-        const data = await res.json();
-        setOrders(data);
-      } catch {
-        toast({
-          title: "Error",
-          description: "Could not load orders.",
-          variant: "destructive",
-        });
-      }
-    };
-    if (token) fetchOrders();
-  }, [token, toast]);
-
-  const handleStatusChange = async (orderId: number, newStatus: string) => {
+  const fetchOrders = async () => {
     try {
-      const res = await fetch(`${API.BASE}/orders/${orderId}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
+      const res = await fetch(`${API.BASE}/orders`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        toast({
-          title: "Error",
-          description: errorData.message || "Failed to update status",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-      );
-      toast({
-        title: "Status updated",
-        description: `Order status changed to ${newStatus}`,
-      });
-    } catch (error) {
-      console.error("Status update failed:", error);
+      if (!res.ok) throw new Error("Failed to fetch orders");
+      const data = await res.json();
+      setOrders(data);
+      
+      // Active: pending + shipped
+      const active = data.filter(o => ['pending', 'shipped'].includes(o.status)).length;
+      // History: ONLY paid
+      const history = data.filter(o => o.status === 'paid').length;
+      setActiveCount(active);
+      setHistoryCount(history);
+      
+    } catch {
       toast({
         title: "Error",
-        description: "Failed to update status",
+        description: "Could not load orders.",
         variant: "destructive",
       });
     }
   };
+  if (token) fetchOrders();
+}, [token, toast]);
+
+// ===== 2. COMPLETE filteredOrders (add before JSX) =====
+const filteredOrders = orders.filter(order => 
+  viewMode === 'active'
+    ? ['pending', 'shipped'].includes(order.status)
+    : order.status === 'paid'
+);
+
+// ===== 3. COMPLETE handleStatusChange (replace yours) =====
+const handleStatusChange = async (orderId: number, newStatus: string) => {
+  if (newStatus === 'paid') {
+    const confirmed = window.confirm(
+      `Mark order as PAID?`
+    );
+    if (!confirmed) return;
+  }
+
+  try {
+    const res = await fetch(`${API.BASE}/orders/${orderId}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      toast({
+        title: "Error",
+        description: errorData.message || "Failed to update status",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedOrders = orders.map((o) => 
+      o.id === orderId ? { ...o, status: newStatus } : o
+    );
+    setOrders(updatedOrders);
+    
+    // Recalculate counts
+    const active = updatedOrders.filter(o => ['pending', 'shipped'].includes(o.status)).length;
+    const history = updatedOrders.filter(o => o.status === 'paid').length;
+    setActiveCount(active);
+    setHistoryCount(history);
+    
+    toast({
+      title: "Status updated",
+      description: `Order status changed to ${newStatus}`,
+    });
+  } catch (error) {
+    console.error("Status update failed:", error);
+    toast({
+      title: "Error",
+      description: "Failed to update status",
+      variant: "destructive",
+    });
+  }
+};
 
   if (!user) return null;
 
@@ -969,165 +1006,220 @@ const AdminDashboard = () => {
               <Card>
                 <CardHeader>
                   <CardTitle>Recent Resources</CardTitle>
-                  <CardDescription>Manage learning resources</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {recentResources.map((resource) => (
-                      <div key={resource.id} className="flex justify-between items-center p-3 border border-border rounded-lg">
-                        <div>
-                          <p className="font-medium">{resource.title}</p>
-                          <p className="text-sm text-muted-foreground">{resource.description}</p>
-                          <span className="text-xs text-muted-foreground block">
-                            {resource.resource_type === 'tutorial' && resource.read_time}
-                            {resource.resource_type === 'video' && 'Video'}
-                            {resource.resource_type === 'download' && 'Download'}
-                          </span>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="ghost" onClick={() => handleEditResourceClick(resource)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="ghost" onClick={() => handleDeleteResource(resource.id)}>
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
+      <CardDescription>Manage learning resources</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-3">
+        {recentFive.map((resource) => (
+          <div key={resource.id} className="flex justify-between items-center p-3 border border-border rounded-lg hover:shadow-sm transition-all">
+            <div className="flex-1 min-w-0">
+              <p className="font-medium truncate">{resource.title}</p>
+              <p className="text-sm text-muted-foreground line-clamp-2">{resource.description}</p>
+              <span className="text-xs text-muted-foreground block mt-1">
+                {resource.resource_type === 'tutorial' && `${resource.read_time} read`}
+                {resource.resource_type === 'video' && 'Video • ' + resource.duration}
+                {resource.resource_type === 'download' && 'Downloadable'}
+              </span>
+            </div>
+            <div className="flex space-x-1 ml-3">
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={() => handleEditResourceClick(resource)}
+                className="h-8 w-8 p-0"
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={() => handleDeleteResource(resource.id)}
+                className="h-8 w-8 p-0 text-destructive hover:text-destructive/80"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* NEW: View All Button */}
+      {recentResources.length > 5 && (
+        <div className="pt-6 border-t mt-4">
+          <Button 
+            variant="ghost" 
+            className="w-full justify-start text-sm h-10 hover:bg-muted/50"
+            onClick={() => {/* Navigate to full resources page or open modal */}}
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            View all {recentResources.length} resources
+          </Button>
+        </div>
+      )}
+      
+      {recentResources.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p className="text-sm">No resources yet</p>
+          <p className="text-xs">Add your first learning resource</p>
+        </div>
+      )}
+    </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-<TabsContent value="orders">
-            <Card>
-              <CardHeader className="py-3">
-                <CardTitle className="text-xl">Orders</CardTitle>
-                <CardDescription className="text-sm">
-                  All customer orders
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {orders.length === 0 && (
-                  <div className="p-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      No orders yet.
-                    </p>
+        <TabsContent value="orders">
+  <Card>
+    <CardHeader className="py-3">
+      <CardTitle className="text-xl">Orders</CardTitle>
+      <CardDescription className="text-sm">
+        All customer orders
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="p-0">
+      {/* NEW: Toggle Buttons */}
+      <div className="p-6 bg-muted/50 border-b">
+        <div className="flex gap-3 max-w-md">
+          <Button 
+            variant={viewMode === 'active' ? 'default' : 'outline'}
+            onClick={() => setViewMode('active')}
+            className="flex-1"
+          >
+            Active Orders ({activeCount})
+          </Button>
+          <Button 
+            variant={viewMode === 'history' ? 'default' : 'outline'}
+            onClick={() => setViewMode('history')}
+            className="flex-1"
+          >
+            Order History ({historyCount})
+          </Button>
+        </div>
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="p-6 text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-muted-foreground" />
+          <p className="text-sm text-muted-foreground mt-2">Loading orders...</p>
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <div className="p-6 text-center">
+          <p className="text-sm text-muted-foreground">
+            No {viewMode === 'active' ? 'active' : 'completed'} orders yet.
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-4 p-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredOrders.map((order) => (
+            <div
+              key={order.id}
+              className="border border-border rounded-md px-4 py-3 space-y-2 text-sm bg-background hover:shadow-sm transition-shadow"
+            >
+              <div className="flex justify-between items-center">
+                <span className="font-semibold truncate max-w-[60%]">
+                  {order.customer_name}
+                </span>
+                <span className="font-semibold">
+                  ₹{order.total_amount}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 truncate flex-1">
+                  📞 {order.customer_phone || "No phone"}
+                </div>
+                <div className="flex items-center gap-1 truncate flex-1">
+                  ✉️ {order.customer_email}
+                </div>
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                📍 {order.customer_city || "N/A"},{" "}
+                {order.customer_pincode || "N/A"}
+              </div>
+
+              <div className="text-xs text-muted-foreground break-words max-h-[40px] overflow-hidden">
+                <span className="font-medium text-foreground/80">
+                  Address:{" "}
+                </span>
+                {order.customer_address || "No address"}
+              </div>
+
+              <div className="text-xs text-muted-foreground">
+                📅 {new Date(order.created_at).toLocaleDateString()}{" "}
+                {new Date(order.created_at).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
+
+              <div className="border-t border-border/60 pt-2 mt-1 space-y-1">
+                {order.items?.slice(0, 2).map((item: any) => (
+                  <div
+                    key={item.product_id}
+                    className="flex justify-between text-xs"
+                  >
+                    <span className="truncate max-w-[70%]">
+                      {item.product_name} × {item.quantity}
+                    </span>
+                    <span>₹{item.line_total}</span>
+                  </div>
+                ))}
+                {order.items && order.items.length > 2 && (
+                  <div className="text-xs text-muted-foreground">
+                    +{order.items.length - 2} more
                   </div>
                 )}
+              </div>
 
-                <div className="grid gap-4 p-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                  {orders.map((order) => (
-                    <div
-                      key={order.id}
-                      className="border border-border rounded-md px-4 py-3 space-y-2 text-sm bg-background hover:shadow-sm transition-shadow"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="font-semibold truncate max-w-[60%]">
-                          {order.customer_name}
-                        </span>
-                        <span className="font-semibold">
-                          ₹{order.total_amount}
-                        </span>
-                      </div>
+              <div className="flex justify-between items-center pt-2">
+  <span
+    className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+      order.status === "delivered"
+        ? "bg-green-100 text-green-800"
+        : order.status === "cancelled"
+        ? "bg-red-100 text-red-800"
+        : order.status === "paid" || order.status === "shipped"
+        ? "bg-blue-100 text-blue-800"
+        : "bg-yellow-100 text-yellow-800"
+    }`}
+  >
+    {order.status}
+  </span>
 
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <div className="flex items-center gap-1 truncate flex-1">
-                          📞 {order.customer_phone || "No phone"}
-                        </div>
-                        <div className="flex items-center gap-1 truncate flex-1">
-                          ✉️ {order.customer_email}
-                        </div>
-                      </div>
-
-                      <div className="text-xs text-muted-foreground">
-                        📍 {order.customer_city || "N/A"},{" "}
-                        {order.customer_pincode || "N/A"}
-                      </div>
-
-                      <div className="text-xs text-muted-foreground break-words max-h-[40px] overflow-hidden">
-                        <span className="font-medium text-foreground/80">
-                          Address:{" "}
-                        </span>
-                        {order.customer_address || "No address"}
-                      </div>
-
-                      <div className="text-xs text-muted-foreground">
-                        📅 {new Date(order.created_at).toLocaleDateString()}{" "}
-                        {new Date(order.created_at).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </div>
-
-                      <div className="border-t border-border/60 pt-2 mt-1 space-y-1">
-                        {order.items?.slice(0, 2).map((item: any) => (
-                          <div
-                            key={item.product_id}
-                            className="flex justify-between text-xs"
-                          >
-                            <span className="truncate max-w-[70%]">
-                              {item.product_name} × {item.quantity}
-                            </span>
-                            <span>₹{item.line_total}</span>
-                          </div>
-                        ))}
-                        {order.items && order.items.length > 2 && (
-                          <div className="text-xs text-muted-foreground">
-                            +{order.items.length - 2} more
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex justify-between items-center pt-2">
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
-                            order.status === "delivered"
-                              ? "bg-green-100 text-green-800"
-                              : order.status === "cancelled"
-                              ? "bg-red-100 text-red-800"
-                              : order.status === "paid" ||
-                                order.status === "shipped"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {order.status}
-                        </span>
-
-                        {order.status === "cancelled" ? (
-                          <button
-                            className="text-[10px] text-muted-foreground underline hover:text-foreground"
-                            onClick={() =>
-                              setOrders((prev) =>
-                                prev.filter((o) => o.id !== order.id)
-                              )
-                            }
-                          >
-                            Remove
-                          </button>
-                        ) : (
-                          <select
-                            className="border border-border rounded px-2 py-1 text-xs bg-background text-foreground hover:border-border focus:border-border focus:outline-none"
-                            value={order.status}
-                            onChange={(e) =>
-                              handleStatusChange(order.id, e.target.value)
-                            }
-                          >
-                            <option value="pending">Pending</option>
-                            <option value="paid">Paid</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                          </select>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+  {order.status === "cancelled" ? (
+    <button
+      className="text-[10px] text-muted-foreground underline hover:text-foreground"
+      onClick={() =>
+        setOrders((prev) =>
+          prev.filter((o) => o.id !== order.id)
+        )
+      }
+    >
+      Remove
+    </button>
+  ) : (
+    <select
+      className="border border-border rounded px-2 py-1 text-xs bg-background text-foreground hover:border-border focus:border-border focus:outline-none disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
+      value={order.status}
+      onChange={(e) => handleStatusChange(order.id, e.target.value)}
+      disabled={order.status === 'paid'}
+    >
+      <option value="pending">Pending</option>
+      <option value="shipped">Shipped</option>
+      <option value="paid">Paid</option>
+    </select>
+  )}
+</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </CardContent>
+  </Card>
+</TabsContent>
         </Tabs>
       </div>
     </div>

@@ -1,13 +1,17 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react"; // ✅ FIXED: Added React
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Zap, Award, Users, CircuitBoard } from "lucide-react";
-import logoLight from "@/assets/circuitaura-logo-light.png";  // NEW: White logo for dark theme
-import logoDark from "@/assets/circuitaura-logo-dark.png";    // NEW: Dark logo for light theme
+import logoLight from "@/assets/circuitaura-logo-light.png";
+import logoDark from "@/assets/circuitaura-logo-dark.png";
 import { API, getImageUrl } from "@/config/api";
 
-const Home = () => {
+interface HomeProps {
+  openAuth?: (tab: 'login' | 'signup') => void;
+}
+
+const Home = ({ openAuth }: HomeProps) => {
   const [featuredItems, setFeaturedItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,19 +66,17 @@ const Home = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
+      {/* Hero Section - YOUR ORIGINAL 2 BUTTONS ONLY */}
       <section className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-secondary/10 to-background py-20 md:py-32">
         <div className="container mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 animate-fade-in">
               <div className="flex items-center space-x-4">
-                {/* Light theme logo (shows on dark backgrounds) */}
                 <img 
                   src={logoLight} 
                   alt="CircuitAura" 
                   className="h-16 w-16 animate-glow hidden dark:block" 
                 />
-                {/* Dark theme logo (shows on light backgrounds) */}
                 <img 
                   src={logoDark} 
                   alt="CircuitAura" 
@@ -90,6 +92,7 @@ const Home = () => {
               <p className="text-xl text-muted-foreground">
                 An early‑stage platform for electronics components, starter kits, and learning resources.
               </p>
+              {/* ✅ FIXED: ONLY YOUR ORIGINAL 2 BUTTONS */}
               <div className="flex flex-wrap gap-4">
                 <Link to="/products">
                   <Button size="lg" className="group">
@@ -100,18 +103,17 @@ const Home = () => {
                 <Link to="/kits">
                   <Button size="lg" variant="secondary">Explore Kits</Button>
                 </Link>
+                {/* ✅ REMOVED: Login/Signup buttons */}
               </div>
             </div>
             <div className="hidden md:block animate-scale-in">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 blur-3xl" />
-                {/* Light theme logo (hero image) */}
                 <img 
                   src={logoLight} 
                   alt="CircuitAura Logo" 
                   className="relative w-full max-w-md mx-auto drop-shadow-2xl hidden dark:block" 
                 />
-                {/* Dark theme logo (hero image) */}
                 <img 
                   src={logoDark} 
                   alt="CircuitAura Logo" 
@@ -141,7 +143,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Featured Products - 2 PRODUCTS + 1 KIT - BUTTON FIXED */}
+      {/* Featured Products */}
       <section className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
@@ -165,7 +167,6 @@ const Home = () => {
             <div className="grid md:grid-cols-3 gap-6">
               {featuredItems.map((item) => (
                 <Card key={item.id} className="group hover:shadow-xl transition-all overflow-hidden h-auto bg-card border border-border">
-                  {/* IMAGE */}
                   <Link 
                     to={item.type === 'kit' ? `/kits/${item.id}` : `/products/${item.id}`}
                     className="block h-48 overflow-hidden bg-muted"
@@ -180,7 +181,6 @@ const Home = () => {
                     />
                   </Link>
                   
-                  {/* CONTENT - BUTTON ALWAYS VISIBLE */}
                   <CardContent className="p-6 pt-0 flex flex-col min-h-[200px] justify-between">
                     <div className="space-y-3 mb-6">
                       <Link 
@@ -199,7 +199,6 @@ const Home = () => {
                       </div>
                     </div>
                     
-                    {/* BUTTON SECTION */}
                     <div className="pt-4 border-t border-border">
                       <Link 
                         to={item.type === 'kit' ? `/kits/${item.id}` : `/products/${item.id}`}
@@ -231,7 +230,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ORIGINAL CTA SECTION - UNCHANGED */}
+      {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-primary to-secondary text-primary-foreground">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to start experimenting with electronics?</h2>

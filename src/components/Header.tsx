@@ -6,7 +6,12 @@ import { Button } from "./ui/button";
 import logo from "@/assets/circuitaura-logo.png";
 import { useState } from "react";
 
-export const Header = () => {
+// ✅ ONLY THIS ADDED
+interface HeaderProps {
+  openAuth?: (tab: 'login' | 'signup') => void;
+}
+
+export const Header = ({ openAuth }: HeaderProps) => {
   const { theme, toggleTheme } = useTheme();
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,8 +23,7 @@ export const Header = () => {
     { to: "/learning", label: "Learning Resources" },
     { to: "/about", label: "About" },
     { to: "/contact", label: "Contact" },
-    { to: "/orders", label: "Orders" },        // NEW
-
+    { to: "/orders", label: "Orders" },        
   ];
 
   return (
@@ -57,7 +61,6 @@ export const Header = () => {
 
           {isAuthenticated ? (
             <div className="hidden md:flex items-center space-x-2">
-              {/* For normal users, go to /orders (Cart + My Orders); admins go to /admin-dashboard */}
               <Link to={user?.role === "admin" ? "/admin-dashboard" : "/orders"}>
                 <Button variant="ghost" size="sm">
                   <User className="h-4 w-4 mr-2" />
@@ -69,12 +72,25 @@ export const Header = () => {
               </Button>
             </div>
           ) : (
-            <Link to="/auth" className="hidden md:block">
-              <Button variant="default">Login</Button>
-            </Link>
+            /* ✅ CHANGED: Links → Buttons with modal */
+            <>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => openAuth?.('login')}
+                className="hidden md:block"
+              >
+                Login
+              </Button>
+              <Button 
+                onClick={() => openAuth?.('signup')}
+                className="hidden md:block"
+              >
+                Sign Up
+              </Button>
+            </>
           )}
 
-          {/* Mobile Menu Button */}
           <Button
             variant="ghost"
             size="icon"
@@ -124,13 +140,30 @@ export const Header = () => {
               </button>
             </>
           ) : (
-            <Link
-              to="/auth"
-              className="block py-2 text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Login
-            </Link>
+            /* ✅ CHANGED: Link → Buttons */
+            <>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => {
+                  openAuth?.('login');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full justify-start"
+              >
+                Login
+              </Button>
+              <Button 
+                size="sm"
+                onClick={() => {
+                  openAuth?.('signup');
+                  setMobileMenuOpen(false);
+                }}
+                className="w-full"
+              >
+                Sign Up
+              </Button>
+            </>
           )}
         </div>
       )}

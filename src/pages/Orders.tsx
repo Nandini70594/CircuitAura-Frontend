@@ -1061,99 +1061,88 @@ const Orders = () => {
               </Card>
             </TabsContent>
 
-            <TabsContent value="orders">
-              <Card>
-                <CardHeader className="py-3">
-                  <CardTitle className="text-xl">📦 My Orders</CardTitle>
-                  <CardDescription>Your order history</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {orders.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      No orders yet.
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {orders.map((order: any) => (
-                        <Card
-                          key={order.id}
-                          className="p-3 hover:shadow-md border-border"
-                        >
-                          <div className="relative">
-                            <div className="flex items-center gap-1.5 absolute top-2 right-2">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-                                  order.status === "delivered"
-                                    ? "bg-green-100 text-green-800"
-                                    : order.status === "cancelled"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-yellow-100 text-yellow-800"
-                                }`}
-                              >
-                                {order.status}
-                              </span>
+<TabsContent value="orders">
+  <Card>
+    <CardHeader className="py-3">
+      <CardTitle className="text-xl">My Orders</CardTitle>
+      <CardDescription>Your order history</CardDescription>
+    </CardHeader>
+    <CardContent className="p-6">
+      {orders.length === 0 ? (
+        <div className="p-6 text-center text-muted-foreground">
+          <p className="text-sm">No orders yet.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          {orders.map((order: any) => (
+            <div key={order.id} className="border border-border rounded-md p-4 space-y-2 bg-background hover:shadow-sm transition-all">
+              {/* Products - Compact list */}
+              <div className="space-y-1 max-h-20 overflow-hidden text-xs">
+  <div className="grid grid-cols-3 gap-2 mb-1">
+    {(order.order_items || []).slice(0, 3).map((item: any, index: number) => (
+      <div key={index} className="flex items-start gap-1">
+        <span className="truncate font-medium text-[11px] leading-tight">
+          {item.product_name}
+        </span>
+        <span className="text-[10px] text-muted-foreground shrink-0 -mt-0.5">
+          ×{item.quantity}
+        </span>
+      </div>
+    ))}
+  </div>
+  {(order.order_items || []).length > 3 && (
+    <div className="text-[10px] text-muted-foreground text-center py-1 px-2 bg-muted/50 rounded-sm">
+      +{(order.order_items || []).length - 3} more
+    </div>
+  )}
+</div>
 
-                              {(order.status === "pending" && user.role !== "admin") && (
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleCancelOrder(order.id)
-                                  }
-                                  className="w-14 h-6 text-xs border-destructive hover:bg-destructive/5 shadow-sm px-1 ml-1"
-                                >
-                                  Cancel
-                                </Button>
-                              )}
+              {/* Total */}
+              <div className="font-semibold text-lg">₹{order.total_amount}</div>
 
-                              {(order.status === "cancelled" || user.role === "admin") && (
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() =>
-                                    handleRemoveOrder(order.id)
-                                  }
-                                  className="w-14 h-6 text-xs shadow-sm px-1 ml-1"
-                                >
-                                  Remove
-                                </Button>
-                              )}
-                            </div>
+              {/* Status Badge - YOUR exact style */}
+              <div className="flex items-center justify-between">
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
+                  order.status === "delivered"
+                    ? "bg-green-100 text-green-800"
+                    : order.status === "cancelled"
+                    ? "bg-red-100 text-red-800"
+                    : order.status === "paid" || order.status === "shipped"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}>
+                  {order.status}
+                </span>
 
-                            <div className="pl-2 pr-24 pt-8 pb-1">
-                              <div className="mb-1">
-                                <p className="font-bold text-sm">
-                                  ₹{order.total_amount}
-                                </p>
-                              </div>
+                {/* Buttons - YOUR exact logic */}
+                {order.status === "pending" ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-20 h-7 text-xs px-2"
+                    onClick={() => handleCancelOrder(order.id)}
+                  >
+                    Cancel
+                  </Button>
+                ) : order.status === "cancelled" ? (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="w-20 h-7 text-xs px-2"
+                    onClick={() => handleRemoveOrder(order.id)}
+                  >
+                    Remove
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </CardContent>
+  </Card>
+</TabsContent>
 
-                              <div className="space-y-0.5 text-xs">
-                                {order.items?.slice(0, 2).map((item: any) => (
-                                  <div
-                                    key={item.product_id}
-                                    className="flex justify-between py-0.5"
-                                  >
-                                    <span className="truncate text-muted-foreground max-w-[70%]">
-                                      {item.product_name} × {item.quantity}
-                                    </span>
-                                    <span>₹{item.line_total}</span>
-                                  </div>
-                                ))}
-                                {order.items?.length > 2 && (
-                                  <p className="text-xs text-muted-foreground">
-                                    +{order.items.length - 2} more
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
           </Tabs>
         </div>
       </div>

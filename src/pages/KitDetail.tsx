@@ -80,7 +80,7 @@ const KitDetail = () => {
   const handleEnquire = () => {
     if (!kit) return;
     const msg = `Hi! Interested in ${kit.name} - ₹${kit.price}`;
-    window.open(`https://wa.me/919999999999?text=${encodeURIComponent(msg)}`, "_blank");
+    window.open(`https://wa.me/9322291932?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   if (loading) {
@@ -180,7 +180,7 @@ const KitDetail = () => {
                 disabled={!isAuthenticated}
                 className="h-10 text-sm"
               >
-                <ShoppingCart className="h-4 w-4" />
+                <ShoppingCart className="h-4 w-4" /> Add to cart
               </Button>
 
               {/* ENQUIRE - OPENS WHATSAPP */}
@@ -190,7 +190,7 @@ const KitDetail = () => {
                 onClick={handleEnquire}
                 className="h-10 text-sm"
               >
-                <MessageCircle className="h-4 w-4" />
+                <MessageCircle className="h-4 w-4" /> Enquire
               </Button>
 
               {/* PDF DOWNLOAD */}
